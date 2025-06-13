@@ -1,0 +1,36 @@
+version: '3'
+services:
+  kafka:
+    image: apache/kafka:3.4.0  # Versión con soporte KRaft
+    hostname: kafka
+    container_name: kafka
+    ports:
+      - "9092:9092"
+      - "9093:9093"
+    environment:
+      - KAFKA_NODE_ID: "[node_id]" # ID del nodo, debe ser un valor numérico entero
+      - KAFKA_PROCESS_ROLES: "controller,broker"  # Este nodo es controller + broker
+      - KAFKA_CONTROLLER_QUORUM_VOTERS: "[id_nodo_1]@[ip_nodo_1]:9093,[id_nodo_2]@[ip_nodo_2]:9093,...[id_nodo_n]@[ip_nodo_n]:9093"
+      - KAFKA_LISTENERS: "PLAINTEXT://:9092,CONTROLLER://:9093"
+      - KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://[ip_nodo_1]]:9092"
+      - KAFKA_INTER_BROKER_LISTENER_NAME: "PLAINTEXT"
+      - KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: "CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT"
+      - KAFKA_CONTROLLER_LISTENER_NAMES: "CONTROLLER"
+      - KAFKA_LOG_DIRS: "/var/lib/kafka/data"
+      - KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: "3"
+      - KAFKA_DEFAULT_REPLICATION_FACTOR: "3"
+    volumes:
+      - kafka_3.4.0:/var/lib/kafka/data
+    networks:
+      - kafka_net
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
+  volumes:
+    kafka_3.4.0:
+      external: true
+  networks:
+    kafka_net:
+      external: true
+      driver: bridge
