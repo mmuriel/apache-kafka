@@ -1,0 +1,52 @@
+version: '3'
+
+services:
+  kafka-connect:
+    image: maomuriel/kafka-connect-4.1.0:0.1.0
+    container_name: kafka-connect
+    ports:
+      - "8083:8083"
+    environment:
+      # Configuración de heap de Java
+      - "KAFKA_HEAP_OPTS=-Xmx1G -Xms1G"
+
+      # Configuración básica de Kafka Connect (equivalente a la imagen oficial)
+      - "CONNECT_BOOTSTRAP_SERVERS=[ip-or-hostanme-kafka_server]]:9092"
+      - "CONNECT_GROUP_ID=kafka-connect-cluster"
+      - "CONNECT_REST_HOST_NAME=0.0.0.0"
+      - "CONNECT_REST_PORT=8083"
+      - "CONNECT_REST_ADVERTISED_HOST_NAME=kafka-connect"
+      - "CONNECT_REST_ADVERTISED_PORT=8083"
+
+      # Topics de almacenamiento interno
+      - "CONNECT_CONFIG_STORAGE_TOPIC=_kafka-connect-configs"
+      - "CONNECT_OFFSET_STORAGE_TOPIC=_kafka-connect-offsets"
+      - "CONNECT_STATUS_STORAGE_TOPIC=_kafka-connect-status"
+
+      # Factores de replicación
+      - "CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR=1"
+      - "CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR=1"
+      - "CONNECT_STATUS_STORAGE_REPLICATION_FACTOR=1"
+
+      # Convertidores
+      - "CONNECT_KEY_CONVERTER=org.apache.kafka.connect.json.JsonConverter"
+      - "CONNECT_VALUE_CONVERTER=org.apache.kafka.connect.json.JsonConverter"
+      - "CONNECT_KEY_CONVERTER_SCHEMAS_ENABLE=false"
+      - "CONNECT_VALUE_CONVERTER_SCHEMAS_ENABLE=false"
+
+      # Plugin path
+      - "CONNECT_PLUGIN_PATH=/opt/kafka/connect/plugins"
+
+      # Debug (opcional)
+      - "CONNECT_DEBUG=true"
+
+      # Custom properties (opcional)
+      - "CONNECT_MMA_PROPERTY=xxx"
+    volumes:
+      - ./plugins:/opt/kafka/connect/plugins
+    networks:
+      - kafka_net
+networks:
+  kafka_net:
+    external: true
+    driver: bridge
